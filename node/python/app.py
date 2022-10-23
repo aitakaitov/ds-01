@@ -1,4 +1,3 @@
-import argparse
 import jsonpickle
 import random
 
@@ -14,7 +13,7 @@ from datetime import datetime
 import socket
 socket.setdefaulttimeout(5)
 
-PRINT_TO_STD = False
+PRINT_TO_STD = True
 if not PRINT_TO_STD:
     open('output', 'w+', encoding='utf-8').close()
 

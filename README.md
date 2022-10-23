@@ -3,11 +3,16 @@
 ## Architektura
 
 Uzly jsou uspořádány do logického kruhu. Každý uzel komunikuje pouze s uzlem vpravo. Každý uzel má před spuštěním informaci o:
-* svém portu (např. 8001)
-* base-portu (např. 8000)
-* počtu uzlů
+* počtu uzlů v kruhu
+* IP adresy
+* portu, na kterém server funguje
+* IP offsetu (IP adresy 10.0.1.101, 102, ...)
 
-Pravý soused uzlu má číslo portu o 1 vyšší než uzel (krom posledního uzlu - ten má jako pravého souseda první uzel).
+Tyto informace jsou uzlu předány přes ENV proměnné, které docker containeru předá vagrant.
+
+Pravý soused uzlu má IP adresu o 1 vyšší než uzel (krom posledního uzlu - ten má jako pravého souseda první uzel).
+
+IP offset je fixně nastaven na 100 - je hardcoded v app.py a Vagrantfile.
 
 Process volby a obravení je následující:
 * Uzel generuje náhodné ID, čeká 15 vteřin a pak začne posílat pravému sousedovi ELECTION zprávu.
@@ -21,3 +26,10 @@ a původce, což je uzel, od kterého zpráva pochází (nepřepisuje se při p�
 Uzly tedy vysílají ELECTION zprávy dokud není jisté, že nějaká zpráva dokončila kolečko přes celý kruh - taková situace nastane, pokud leader uzel přijme znovu
 svoji ELECTION zprávu, nebo pokud jiný (ne-leader) uzel přijme LEADER zprávu. V momentě, kdy je leader zvolený, nevadí, že jsou v oběhu ELECTION zprávy - protože
 již existuje leader, tak zablokuje jakoukoliv ELECTION zprávu a tím pádem nemůže dojít k situaci, kdy by byli dva leadeři.
+
+Počet uzlů lze upravit ve Vagrantfile. Celý cluster lze spustit přes <code>vagrant up</code>.
+Jednotlivé uzly vypisují stavové informace spolu s časem do standardního výstupu - nastavením <code>PRINT_TO_STD</code> v <code>app.py</code>
+na <code>False</code> se všechny informace vypíšou do souboru <code>output</code> v kořenovém adresáři.
+
+Uzly využívají <code>Flask</code> pro zpracování požadavků a <code>requests</code> pro generování požadavků.
+Každý uzel má pouze jeden endpoint <code>/message</code>, který zajišťuje veškerou komunikaci.

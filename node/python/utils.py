@@ -26,7 +26,7 @@ class NetworkInfo:
         else:
             _next = this + 1 if this - IP_OFFSET != self.node_count else IP_OFFSET + 1
 
-        self.right_neighbour_ip = f'{self.ip_prefix}.{100 + _next}'
+        self.right_neighbour_ip = f'{self.ip_prefix}.{_next}'
 
         self.right_neighbour_id = -1
 
