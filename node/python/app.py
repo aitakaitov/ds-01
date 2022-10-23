@@ -2,6 +2,8 @@ import argparse
 import jsonpickle
 import random
 
+import os
+
 from flask_cors import CORS
 from flask import Flask, request
 from utils import *
@@ -12,20 +14,20 @@ from datetime import datetime
 import socket
 socket.setdefaulttimeout(5)
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--base_port', required=True, type=int)
-parser.add_argument('--port', required=True, type=int)
-parser.add_argument('--node_count', required=True, type=int)
-parser.add_argument('--timeout_sec', required=False, default=15, type=int)
-args = parser.parse_args()
+PRINT_TO_STD = False
+if not PRINT_TO_STD:
+    open('output', 'w+', encoding='utf-8').close()
 
+TIMEOUT_SEC = 15
+IP_ADDRESS = os.environ['IP_ADDRESS']
+NODE_COUNT = os.environ['NUM_NODES']
 
-network_info = NetworkInfo(random.randint(0, 2_000_000_000), args.base_port, args.node_count, args.port)
+network_info = NetworkInfo(random.randint(0, 2_000_000_000), IP_ADDRESS, NODE_COUNT)
 timers = {}
 
 
 def create_and_start_timer(func):
-    timer = threading.Timer(args.timeout_sec, func)
+    timer = threading.Timer(TIMEOUT_SEC, func)
     timer.start()
     return timer
 
@@ -40,7 +42,7 @@ def send_election_message():
             timers['election_init'] = create_and_start_timer(send_election_message)
 
     except BaseException:
-        log_message(f'Could not contact the neighbour, retry in {args.timeout_sec} seconds')
+        log_message(f'Could not contact the neighbour, retry in {TIMEOUT_SEC} seconds')
         timers['election_init'] = create_and_start_timer(send_election_message)
 
 
@@ -64,11 +66,15 @@ def sender_this_node(message):
 
 
 def log_message(string):
-    print(f'[{datetime.utcnow()}][{network_info.id}]\t{string}')
+    if PRINT_TO_STD:
+        print(f'[{datetime.utcnow()}][{network_info.id}]\t{string}')
+    else:
+        with open('output', 'a', encoding='utf-8') as f:
+            print(f'[{datetime.utcnow()}][{network_info.id}]\t{string}', file=f, flush=True)
 
 
 log_message(f'Node {network_info.id} starting up')
-
+log_message(f'Node IP: {network_info.ip}\nNeighbour IP: {network_info.right_neighbour_ip}\nNumber of nodes: {network_info.node_count}')
 
 #
 # FLASK needs to be at the bottom since we need to do some things before it blocks on the run() call
@@ -160,4 +166,4 @@ def process_message():
 
 
 CORS(app)
-app.run('localhost', args.port)
+app.run('0.0.0.0')

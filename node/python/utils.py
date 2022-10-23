@@ -2,33 +2,36 @@ import math
 from enum import Enum
 
 GREEN_COLOR_FRACTION = 1 / 3
+IP_OFFSET = 100
+
 
 class NetworkInfo:
-    def __init__(self, _id, base_port, node_count, port):
+    def __init__(self, _id, ip, node_count):
         self.id = _id
-        self.port = port
-        self.node_count = node_count
-        self.base_port = base_port
+        self.node_count = int(node_count)
+        self.ip = ip
         self.leader_id = -1
         self.color = None
         self.node_ids = None
 
         self.round_trip_made = False
 
+        split_ip = ip.split('.')
+        self.ip_prefix = split_ip[0] + '.' + split_ip[1] + '.' + split_ip[2]
+        this = int(split_ip[3])
+
         # One to the right if we are not the last node, otherwise the first node
-        self.right_neighbour_port = port + 1 if port - base_port != node_count else base_port + 1
+        if self.node_count == 2:
+            _next = 1 if this % 2 == 0 else 2
+        else:
+            _next = this + 1 if this - IP_OFFSET != self.node_count else IP_OFFSET + 1
+
+        self.right_neighbour_ip = f'{self.ip_prefix}.{100 + _next}'
 
         self.right_neighbour_id = -1
 
     def get_right_neighbour_address(self):
-        return f'http://localhost:{self.right_neighbour_port}/message'
-
-    def skip_right_neighbour(self):
-        """
-        Set the next node in the ring as the right neighbour
-        :return:
-        """
-        self.right_neighbour_port = self.port + 2 if self.port - self.base_port != self.node_count else self.base_port + 1
+        return f'http://{self.right_neighbour_ip}:5000/message'
 
 
 class BaseRequest:
