@@ -66,14 +66,14 @@ def sender_this_node(message):
 
 def log_message(string):
     if PRINT_TO_STD:
-        print(f'[{datetime.utcnow()}][{network_info.id}]\t{string}')
+        print(f'[{datetime.utcnow()}][{network_info.id}]\t{string}', flush=True)
     else:
         with open('output', 'a', encoding='utf-8') as f:
             print(f'[{datetime.utcnow()}][{network_info.id}]\t{string}', file=f, flush=True)
 
 
 log_message(f'Node {network_info.id} starting up')
-log_message(f'Node IP: {network_info.ip}\nNeighbour IP: {network_info.right_neighbour_ip}\nNumber of nodes: {network_info.node_count}')
+log_message(f'\nNode IP: {network_info.ip}\nNeighbour IP: {network_info.right_neighbour_ip}\nNumber of nodes: {network_info.node_count}')
 
 #
 # FLASK needs to be at the bottom since we need to do some things before it blocks on the run() call
@@ -155,6 +155,8 @@ def process_message():
         if sender_this_node(data):
             log_message('Coloring request came back to origin')
             log_message('Colors are all set')
+            log_message(f'\nNode ID\tColor\n' + '\n'.join(f'{node}\t {color}' for node, color in data.node_color_dict.
+                                                         items()))
         # this node is getting colored
         else:
             log_message(f'Setting color to {data.node_color_dict[network_info.id]}')

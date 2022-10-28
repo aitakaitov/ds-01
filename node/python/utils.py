@@ -56,6 +56,8 @@ class ColorRequest(BaseRequest):
     def __determine_coloring(self, all_node_ids):
         node_count = len(all_node_ids)
         green_node_count = math.ceil(node_count * GREEN_COLOR_FRACTION)
+
+        # the first node is always leader, since he sends the coloring message
         green_nodes = all_node_ids[:green_node_count]
         red_nodes = all_node_ids[green_node_count:]
 
