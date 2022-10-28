@@ -4,9 +4,9 @@
 
 Uzly jsou uspořádány do logického kruhu. Každý uzel komunikuje pouze s uzlem vpravo. Každý uzel má před spuštěním informaci o:
 * počtu uzlů v kruhu
-* IP adresy
-* portu, na kterém server funguje
-* IP offsetu (IP adresy 10.0.1.101, 102, ...)
+* své IP adrese
+* portu, na kterém server poslouchá (každý poslouchá na stejném)
+* IP offsetu (101, 102, ...) a bázi (10.0.1) - z toho dá domhromady IP adresy všech uzlů v kruhu a ví, který je jeho soused
 
 Tyto informace jsou uzlu předány přes ENV proměnné, které docker containeru předá vagrant.
 
